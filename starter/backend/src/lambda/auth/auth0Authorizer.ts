@@ -1,12 +1,18 @@
+import { APIGatewayTokenAuthorizerEvent, APIGatewayAuthorizerResult } from 'aws-lambda';
 import Axios from 'axios'
-import jsonwebtoken from 'jsonwebtoken'
+import {verify} from 'jsonwebtoken'
+import JwksRsa, { CertSigningKey } from 'jwks-rsa';
 import { createLogger } from '../../utils/logger.mjs'
+import { JwtPayload } from '../../auth/JwtPayload'
+
 
 const logger = createLogger('auth')
 
 const jwksUrl = 'https://test-endpoint.auth0.com/.well-known/jwks.json'
 
-export async function handler(event) {
+export const handler = async (
+  event: APIGatewayTokenAuthorizerEvent
+): Promise<APIGatewayAuthorizerResult> => {
   try {
     const jwtToken = await verifyToken(event.authorizationToken)
 
@@ -20,8 +26,8 @@ export async function handler(event) {
             Effect: 'Allow',
             Resource: '*'
           }
-        ]
-      }
+        ] 
+      }   
     }
   } catch (e) {
     logger.error('User not authorized', { error: e.message })
@@ -42,12 +48,15 @@ export async function handler(event) {
   }
 }
 
-async function verifyToken(authHeader) {
+async function verifyToken(authHeader: string): Promise<JwtPayload> {
   const token = getToken(authHeader)
-  const jwt = jsonwebtoken.decode(token, { complete: true })
 
   // TODO: Implement token verification
-  return undefined;
+  const client = JwksRsa({ jwksUri: jwksUrl });
+  const kid = '1rxWtoXZ3Hsmtolie3mcI';
+  const certSigningKey = (await client.getSigningKeyAsync(kid)) as CertSigningKey;
+
+  return verify(token, certSigningKey.publicKey, { algorithms: ['RS256'] }) as JwtPayload;
 }
 
 function getToken(authHeader) {
