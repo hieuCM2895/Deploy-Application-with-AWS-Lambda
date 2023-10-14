@@ -1,3 +1,5 @@
+org: hieu2895
+app: serverless-todo-app
 service: serverless-todo-app
 
 plugins:
@@ -161,8 +163,6 @@ resources:
             AttributeType: S
           - AttributeName: dueDate
             AttributeType: S
-          - AttributeName: name
-            AttributeType: S
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
@@ -197,6 +197,7 @@ resources:
                 - POST
                 - DELETE
                 - HEAD
+              MaxAge: 3000
 
     BucketPolicy:
       Type: AWS::S3::BucketPolicy

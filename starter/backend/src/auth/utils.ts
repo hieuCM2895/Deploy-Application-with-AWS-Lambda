@@ -1,5 +1,5 @@
 import { decode } from 'jsonwebtoken'
-import { createLogger } from '../utils/logger.mjs'
+import { createLogger } from '../utils/logger.js'
 import { JwtPayload } from './JwtPayload'
 
 
